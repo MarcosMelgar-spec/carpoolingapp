@@ -90,7 +90,7 @@ export default function LocationInput({ value, onChange, onSelect, placeholder, 
       </div>
 
       {open && results.length > 0 && (
-        <ul className="absolute z-50 w-full mt-1 bg-white border border-slate-200 rounded-xl shadow-lg overflow-hidden">
+        <ul className="absolute z-[100] w-full mt-1 bg-white border border-slate-200 rounded-xl shadow-lg overflow-hidden">
           {results.map((location, i) => (
             <li key={i}>
               <button

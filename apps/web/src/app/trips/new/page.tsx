@@ -81,7 +81,7 @@ export default function NewTripPage() {
       <div className="max-w-2xl mx-auto px-4 py-8">
         <form onSubmit={handleSubmit} className="space-y-5">
           {/* Ruta */}
-          <div className="bg-white rounded-xl border border-slate-200 p-5">
+          <div className="bg-white rounded-xl border border-slate-200 p-5 relative z-10">
             <h2 className="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-4">Ruta</h2>
             <div className="space-y-4">
               <div>
