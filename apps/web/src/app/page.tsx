@@ -2,7 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import Navbar from "@/components/Navbar";
 import TripCard from "@/components/TripCard";
 import SearchBar from "@/components/SearchBar";
-import type { Trip } from "@carpoolingapp/shared";
+import type { Trip } from "@/lib/types";
 import Link from "next/link";
 import { Suspense } from "react";
 

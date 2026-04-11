@@ -1,5 +1,5 @@
 import Link from "next/link";
-import type { Trip } from "@carpoolingapp/shared";
+import type { Trip } from "@/lib/types";
 
 interface TripCardProps {
   trip: Trip;
