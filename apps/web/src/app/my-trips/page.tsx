@@ -3,6 +3,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import Navbar from "@/components/Navbar";
 import TabSwitcher from "./TabSwitcher";
+import ReviewButton from "@/components/ReviewButton";
 
 interface Props {
   searchParams: Promise<{ tab?: string }>;
@@ -37,9 +38,16 @@ export default async function MyTripsPage({ searchParams }: Props) {
   // Viajes como pasajero
   const { data: bookings } = await supabase
     .from("bookings")
-    .select("*, trip:trips(id, origin, destination, departure_at, price_per_seat, status, driver:profiles!driver_id(full_name))")
+    .select("*, trip:trips(id, origin, destination, departure_at, price_per_seat, status, driver_id, driver:profiles!driver_id(id, full_name))")
     .eq("passenger_id", user.id)
     .order("created_at", { ascending: false });
+
+  // Reviews ya enviadas por el usuario (para no mostrar botón si ya calificó)
+  const { data: myReviews } = await supabase
+    .from("reviews")
+    .select("trip_id")
+    .eq("reviewer_id", user.id);
+  const reviewedTripIds = new Set((myReviews ?? []).map((r: { trip_id: string }) => r.trip_id));
 
   // Viajes como conductor
   const { data: driverTrips } = await supabase
@@ -91,7 +99,7 @@ export default async function MyTripsPage({ searchParams }: Props) {
               ) : (
                 <div className="space-y-3">
                   {upcomingBookings.map((booking) => (
-                    <BookingCard key={booking.id} booking={booking} />
+                    <BookingCard key={booking.id} booking={booking} reviewedTripIds={reviewedTripIds} />
                   ))}
                 </div>
               )}
@@ -105,7 +113,7 @@ export default async function MyTripsPage({ searchParams }: Props) {
                 </h2>
                 <div className="space-y-3">
                   {pastBookings.map((booking) => (
-                    <BookingCard key={booking.id} booking={booking} muted />
+                    <BookingCard key={booking.id} booking={booking} muted reviewedTripIds={reviewedTripIds} />
                   ))}
                 </div>
               </section>
@@ -168,14 +176,16 @@ function EmptyState({ message, action }: { message: string; action?: React.React
   );
 }
 
-function BookingCard({ booking, muted = false }: { booking: any; muted?: boolean }) {
+function BookingCard({ booking, muted = false, reviewedTripIds }: { booking: any; muted?: boolean; reviewedTripIds?: Set<string> }) {
   const trip = booking.trip;
   if (!trip) return null;
   const st = statusLabel[booking.status] ?? statusLabel.pending;
+  const isPast = new Date(trip.departure_at) <= new Date();
+  const canReview = isPast && booking.status === "confirmed" && trip.driver_id && trip.driver;
 
   return (
-    <Link href={`/trips/${trip.id}`}>
-      <div className={`bg-white border rounded-xl px-5 py-4 hover:border-sky-400 hover:shadow-sm transition-all ${muted ? "opacity-60 border-slate-100" : "border-slate-200"}`}>
+    <div className={`bg-white border rounded-xl px-5 py-4 transition-all ${muted ? "opacity-60 border-slate-100" : "border-slate-200"}`}>
+      <Link href={`/trips/${trip.id}`} className="block hover:opacity-80 transition-opacity">
         <div className="flex items-center justify-between gap-4">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1">
@@ -193,8 +203,18 @@ function BookingCard({ booking, muted = false }: { booking: any; muted?: boolean
             <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${st.class}`}>{st.label}</span>
           </div>
         </div>
-      </div>
-    </Link>
+      </Link>
+      {canReview && (
+        <div className="mt-3 pt-3 border-t border-slate-100">
+          <ReviewButton
+            tripId={trip.id}
+            reviewedId={trip.driver_id}
+            reviewedName={trip.driver.full_name}
+            alreadyReviewed={reviewedTripIds?.has(trip.id) ?? false}
+          />
+        </div>
+      )}
+    </div>
   );
 }
 

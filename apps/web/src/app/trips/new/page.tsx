@@ -22,6 +22,7 @@ export default function NewTripPage() {
     available_seats: "3",
     price_per_seat: "0",
     description: "",
+    meeting_point: "",
   });
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) {
@@ -34,9 +35,27 @@ export default function NewTripPage() {
 
     if (!form.origin.trim()) { setError("Seleccioná el origen del viaje"); return; }
     if (!form.destination.trim()) { setError("Seleccioná el destino del viaje"); return; }
+
+    const originCity = form.origin.split(",")[0].trim().toLowerCase();
+    const destinationCity = form.destination.split(",")[0].trim().toLowerCase();
+    if (originCity === destinationCity) {
+      setError("El origen y el destino no pueden ser iguales");
+      return;
+    }
+
     if (!form.departure_at) { setError("Seleccioná la fecha y hora de salida"); return; }
     if (new Date(form.departure_at) <= new Date()) {
       setError("La fecha de salida debe ser en el futuro");
+      return;
+    }
+
+    if (parseFloat(form.price_per_seat) < 0) {
+      setError("El precio no puede ser negativo");
+      return;
+    }
+
+    if (form.description.length > 500) {
+      setError("La descripción no puede superar los 500 caracteres");
       return;
     }
 
@@ -62,6 +81,7 @@ export default function NewTripPage() {
       available_seats: parseInt(form.available_seats),
       price_per_seat: parseFloat(form.price_per_seat),
       description: form.description || null,
+      meeting_point: form.meeting_point.trim() || null,
     }).select().single();
 
     if (error) {
@@ -171,15 +191,42 @@ export default function NewTripPage() {
             </div>
           </div>
 
+          {/* Punto de encuentro */}
+          <div className="bg-white rounded-xl border border-slate-200 p-5">
+            <div className="flex items-center justify-between mb-1">
+              <h2 className="text-sm font-semibold text-slate-500 uppercase tracking-wide">
+                Punto de encuentro <span className="normal-case font-normal text-slate-400">(opcional)</span>
+              </h2>
+            </div>
+            <p className="text-xs text-slate-400 mb-3">
+              Dónde van a encontrarse. Solo visible para pasajeros con reserva confirmada.
+            </p>
+            <input
+              name="meeting_point"
+              type="text"
+              value={form.meeting_point}
+              onChange={handleChange}
+              maxLength={200}
+              placeholder="Ej: Shell Av. Pellegrini 1234, frente al semáforo"
+              className="w-full border border-slate-300 rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent"
+            />
+          </div>
+
           {/* Descripción */}
           <div className="bg-white rounded-xl border border-slate-200 p-5">
-            <h2 className="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-1">Descripción <span className="normal-case font-normal text-slate-400">(opcional)</span></h2>
+            <div className="flex items-center justify-between mb-1">
+              <h2 className="text-sm font-semibold text-slate-500 uppercase tracking-wide">Descripción <span className="normal-case font-normal text-slate-400">(opcional)</span></h2>
+              <span className={`text-xs ${form.description.length > 450 ? "text-red-500" : "text-slate-400"}`}>
+                {form.description.length}/500
+              </span>
+            </div>
             <p className="text-xs text-slate-400 mb-3">Paradas, equipaje permitido, preferencias de viaje</p>
             <textarea
               name="description"
               value={form.description}
               onChange={handleChange}
               rows={3}
+              maxLength={500}
               placeholder="Ej: Salgo del centro de Rosario. Acepto mascotas pequeñas..."
               className="w-full border border-slate-300 rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent resize-none"
             />

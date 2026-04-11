@@ -6,9 +6,17 @@ import { createClient } from "@/lib/supabase/client";
 
 function validate(fullName: string, email: string, password: string) {
   const errors: { fullName?: string; email?: string; password?: string } = {};
-  if (fullName.trim().length < 2) errors.fullName = "Ingresá tu nombre completo (mínimo 2 caracteres)";
+  if (fullName.trim().length < 2) {
+    errors.fullName = "Ingresá tu nombre completo (mínimo 2 caracteres)";
+  } else if (!/^[a-zA-ZáéíóúüñÁÉÍÓÚÜÑ\s'\-]+$/.test(fullName.trim())) {
+    errors.fullName = "El nombre solo puede contener letras, espacios y guiones";
+  }
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errors.email = "Ingresá un email válido";
-  if (password.length < 6) errors.password = "La contraseña debe tener al menos 6 caracteres";
+  if (password.length < 6) {
+    errors.password = "La contraseña debe tener al menos 6 caracteres";
+  } else if (password.toLowerCase() === email.toLowerCase()) {
+    errors.password = "La contraseña no puede ser igual al email";
+  }
   return errors;
 }
 

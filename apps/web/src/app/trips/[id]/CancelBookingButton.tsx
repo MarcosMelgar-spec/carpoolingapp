@@ -22,6 +22,15 @@ export default function CancelBookingButton({ bookingId, departureAt }: Props) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const policy = getPolicy(departureAt);
+  const isPast = new Date(departureAt) < new Date();
+
+  if (isPast) {
+    return (
+      <div className="w-full border border-slate-200 bg-slate-50 text-slate-400 rounded-lg py-2.5 text-sm text-center">
+        Este viaje ya partió — no se puede cancelar
+      </div>
+    );
+  }
 
   async function handleCancel() {
     setLoading(true);

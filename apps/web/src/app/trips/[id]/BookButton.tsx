@@ -21,6 +21,23 @@ export default function BookButton({ tripId }: { tripId: string }) {
       return;
     }
 
+    const { data: hasConflict, error: conflictError } = await supabase.rpc("check_double_booking", {
+      p_passenger_id: user.id,
+      p_trip_id: tripId,
+    });
+
+    if (conflictError) {
+      setError(conflictError.message);
+      setLoading(false);
+      return;
+    }
+
+    if (hasConflict) {
+      setError("Ya tenés una reserva activa en un viaje con horario similar (±3 hs). Cancelala primero.");
+      setLoading(false);
+      return;
+    }
+
     const { error } = await supabase.from("bookings").insert({
       trip_id: tripId,
       passenger_id: user.id,

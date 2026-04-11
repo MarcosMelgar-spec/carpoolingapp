@@ -46,15 +46,17 @@ export default function Navbar({ userEmail }: NavbarProps) {
               >
                 + Publicar viaje
               </Link>
-              <div className="hidden sm:flex items-center gap-2 bg-white/10 rounded-lg px-3 py-1.5">
-                <div className="w-6 h-6 rounded-full bg-sky-400 flex items-center justify-center text-xs font-bold text-white">
-                  {userEmail.charAt(0).toUpperCase()}
-                </div>
-                <span className="text-white/80 text-xs max-w-[120px] truncate">{userEmail}</span>
-              </div>
+              {/* Avatar — visible en todos los tamaños, lleva al perfil */}
+              <Link
+                href="/profile"
+                title="Mi perfil"
+                className="flex items-center justify-center w-9 h-9 rounded-full bg-sky-400 hover:bg-sky-300 text-white text-sm font-bold transition-colors shrink-0"
+              >
+                {userEmail.charAt(0).toUpperCase()}
+              </Link>
               <button
                 onClick={handleSignOut}
-                className="text-white/60 hover:text-white text-sm transition-colors"
+                className="text-white/60 hover:text-white text-sm transition-colors hidden sm:block"
               >
                 Salir
               </button>
