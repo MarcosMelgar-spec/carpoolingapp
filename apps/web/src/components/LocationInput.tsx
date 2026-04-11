@@ -4,7 +4,6 @@ import { useState, useEffect, useRef } from "react";
 
 interface Location {
   name: string;
-  displayName: string;
   lat: number;
   lng: number;
 }
@@ -17,22 +16,13 @@ interface Props {
   className?: string;
 }
 
-function formatName(result: any): string {
-  const a = result.address ?? {};
-  const city = a.city ?? a.town ?? a.village ?? a.municipality ?? a.county ?? "";
-  const state = a.state ?? "";
-  if (city && state) return `${city}, ${state}`;
-  if (city) return city;
-  return result.display_name.split(",").slice(0, 2).join(",").trim();
-}
-
 export default function LocationInput({ value, onChange, onSelect, placeholder, className }: Props) {
   const [results, setResults] = useState<Location[]>([]);
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const selectedRef = useRef(false);
+  const skipSearch = useRef(false);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -45,7 +35,7 @@ export default function LocationInput({ value, onChange, onSelect, placeholder, 
   }, []);
 
   useEffect(() => {
-    if (selectedRef.current) { selectedRef.current = false; return; }
+    if (skipSearch.current) { skipSearch.current = false; return; }
     if (value.length < 2) { setResults([]); setOpen(false); return; }
 
     if (debounceRef.current) clearTimeout(debounceRef.current);
@@ -53,35 +43,27 @@ export default function LocationInput({ value, onChange, onSelect, placeholder, 
       setLoading(true);
       try {
         const res = await fetch(
-          `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(value)}&countrycodes=ar&format=json&limit=6&addressdetails=1`,
-          { headers: { "Accept-Language": "es" } }
+          `https://apis.datos.gob.ar/georef/api/localidades?nombre=${encodeURIComponent(value)}&max=8&campos=id,nombre,provincia.nombre,centroide`
         );
         const data = await res.json();
-        const locations: Location[] = data.map((r: any) => ({
-          name: formatName(r),
-          displayName: r.display_name,
-          lat: parseFloat(r.lat),
-          lng: parseFloat(r.lon),
+        const locations: Location[] = (data.localidades ?? []).map((l: any) => ({
+          name: `${l.nombre}, ${l.provincia.nombre}`,
+          lat: l.centroide?.lat ?? 0,
+          lng: l.centroide?.lon ?? 0,
         }));
-        // Deduplicar por name
-        const seen = new Set<string>();
-        const unique = locations.filter((l) => {
-          if (seen.has(l.name)) return false;
-          seen.add(l.name);
-          return true;
-        });
-        setResults(unique);
-        setOpen(unique.length > 0);
+        setResults(locations);
+        setOpen(locations.length > 0);
       } catch {
         setResults([]);
+        setOpen(false);
       } finally {
         setLoading(false);
       }
-    }, 350);
+    }, 300);
   }, [value]);
 
   function handleSelect(location: Location) {
-    selectedRef.current = true;
+    skipSearch.current = true;
     onChange(location.name);
     onSelect?.(location);
     setOpen(false);
@@ -120,7 +102,7 @@ export default function LocationInput({ value, onChange, onSelect, placeholder, 
                   <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                   <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
-                <span className="text-sm text-slate-700 truncate">{location.name}</span>
+                <span className="text-sm text-slate-700">{location.name}</span>
               </button>
             </li>
           ))}
