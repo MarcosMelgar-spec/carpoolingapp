@@ -30,8 +30,17 @@ export default function NewTripPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setLoading(true);
     setError("");
+
+    if (!form.origin.trim()) { setError("Seleccioná el origen del viaje"); return; }
+    if (!form.destination.trim()) { setError("Seleccioná el destino del viaje"); return; }
+    if (!form.departure_at) { setError("Seleccioná la fecha y hora de salida"); return; }
+    if (new Date(form.departure_at) <= new Date()) {
+      setError("La fecha de salida debe ser en el futuro");
+      return;
+    }
+
+    setLoading(true);
 
     const supabase = createClient();
     const { data: { user } } = await supabase.auth.getUser();

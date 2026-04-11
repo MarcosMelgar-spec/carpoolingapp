@@ -62,6 +62,7 @@ export default async function TripDetailPage({ params }: Props) {
 
   const isDriver = user?.id === trip.driver_id;
   const isCancelled = trip.status === "cancelled";
+  const isPast = new Date(trip.departure_at) < new Date() && trip.status !== "cancelled";
 
   // Si es el conductor, traer la lista de pasajeros
   let bookings: { id: string; status: string; seats: number; passenger: { id: string; full_name: string; rating: number } | null }[] = [];
@@ -86,6 +87,15 @@ export default async function TripDetailPage({ params }: Props) {
           </svg>
           Volver a viajes
         </Link>
+
+        {isPast && !isCancelled && (
+          <div className="mb-4 flex items-center gap-3 bg-slate-100 border border-slate-200 rounded-xl px-4 py-3">
+            <svg className="w-5 h-5 text-slate-400 shrink-0" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
+            </svg>
+            <p className="text-sm font-medium text-slate-600">Este viaje ya partió y no está disponible para reservas</p>
+          </div>
+        )}
 
         {isCancelled && (
           <div className="mb-4 flex items-center gap-3 bg-red-50 border border-red-200 rounded-xl px-4 py-3">
@@ -268,7 +278,7 @@ export default async function TripDetailPage({ params }: Props) {
               )}
 
               {/* Pasajero: puede reservar */}
-              {user && !isDriver && trip.status === "active" && !existingBooking && (
+              {user && !isDriver && trip.status === "active" && !existingBooking && !isPast && (
                 <BookButton tripId={trip.id} />
               )}
 
