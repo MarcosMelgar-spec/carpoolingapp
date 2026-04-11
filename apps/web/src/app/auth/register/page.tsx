@@ -54,7 +54,14 @@ export default function RegisterPage() {
     });
 
     if (error) {
-      setServerError(error.message);
+      const msg = error.message.toLowerCase();
+      if (msg.includes("already registered") || msg.includes("already exists") || msg.includes("email address is already")) {
+        setErrors((p) => ({ ...p, email: "Ya existe una cuenta con ese email. ¿Querés iniciar sesión?" }));
+      } else if (msg.includes("password")) {
+        setErrors((p) => ({ ...p, password: "La contraseña no cumple los requisitos mínimos" }));
+      } else {
+        setServerError(error.message);
+      }
       setLoading(false);
       return;
     }
