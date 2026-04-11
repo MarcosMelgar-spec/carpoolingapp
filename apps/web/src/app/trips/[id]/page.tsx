@@ -61,6 +61,18 @@ export default async function TripDetailPage({ params }: Props) {
   const isDriver = user?.id === trip.driver_id;
   const isCancelled = trip.status === "cancelled";
 
+  // Si es el conductor, traer la lista de pasajeros
+  let bookings: { id: string; status: string; seats: number; passenger: { id: string; full_name: string; rating: number } | null }[] = [];
+  if (isDriver) {
+    const { data } = await supabase
+      .from("bookings")
+      .select("id, status, seats, passenger:profiles!passenger_id(id, full_name, rating)")
+      .eq("trip_id", id)
+      .neq("status", "cancelled")
+      .order("created_at", { ascending: true });
+    bookings = (data ?? []) as unknown as typeof bookings;
+  }
+
   return (
     <>
       <Navbar userEmail={user?.email} />
@@ -143,6 +155,54 @@ export default async function TripDetailPage({ params }: Props) {
               <div className="bg-white rounded-xl border border-slate-200 px-6 py-5">
                 <h3 className="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-2">Descripción</h3>
                 <p className="text-slate-700 text-sm leading-relaxed">{trip.description}</p>
+              </div>
+            )}
+
+            {/* Lista de pasajeros — solo visible para el conductor */}
+            {isDriver && (
+              <div className="bg-white rounded-xl border border-slate-200 px-6 py-5">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-sm font-semibold text-slate-500 uppercase tracking-wide">
+                    Pasajeros
+                  </h3>
+                  <span className="text-xs font-semibold bg-slate-100 text-slate-600 px-2.5 py-1 rounded-full">
+                    {bookings.length} / {bookings.length + trip.available_seats}
+                  </span>
+                </div>
+
+                {bookings.length === 0 ? (
+                  <div className="text-center py-6">
+                    <p className="text-sm text-slate-400">Todavía no hay pasajeros</p>
+                    <p className="text-xs text-slate-300 mt-0.5">Las reservas aparecerán acá</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {bookings.map((booking) => (
+                      <div key={booking.id} className="flex items-center justify-between gap-3">
+                        <div className="flex items-center gap-3">
+                          <div className="w-9 h-9 rounded-full bg-[#1e3a5f] flex items-center justify-center text-white text-sm font-bold shrink-0">
+                            {booking.passenger?.full_name?.charAt(0).toUpperCase() ?? "?"}
+                          </div>
+                          <div>
+                            <p className="text-sm font-semibold text-slate-800">
+                              {booking.passenger?.full_name ?? "—"}
+                            </p>
+                            <p className="text-xs text-slate-400">
+                              ⭐ {Number(booking.passenger?.rating ?? 5).toFixed(1)} · {booking.seats} {booking.seats === 1 ? "asiento" : "asientos"}
+                            </p>
+                          </div>
+                        </div>
+                        <span className={`text-xs font-semibold px-2.5 py-1 rounded-full shrink-0 ${
+                          booking.status === "confirmed"
+                            ? "bg-green-100 text-green-700"
+                            : "bg-yellow-100 text-yellow-700"
+                        }`}>
+                          {booking.status === "confirmed" ? "Confirmado" : "Pendiente"}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
           </div>
