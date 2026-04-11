@@ -344,8 +344,8 @@ export default async function TripDetailPage({ params }: Props) {
               )}
 
               {/* Pasajero: puede reservar */}
-              {user && !isDriver && trip.status === "active" && !existingBooking && !isPast && (
-                <BookButton tripId={trip.id} />
+              {user && !isDriver && trip.status === "active" && trip.available_seats > 0 && !existingBooking && !isPast && (
+                <BookButton tripId={trip.id} availableSeats={trip.available_seats} />
               )}
 
               {/* Pasajero: reserva activa */}

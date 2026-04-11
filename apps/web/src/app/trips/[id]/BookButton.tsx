@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
-export default function BookButton({ tripId }: { tripId: string }) {
+export default function BookButton({ tripId, availableSeats }: { tripId: string; availableSeats: number }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -12,6 +12,12 @@ export default function BookButton({ tripId }: { tripId: string }) {
   async function handleBook() {
     setLoading(true);
     setError("");
+
+    if (availableSeats <= 0) {
+      setError("No hay lugares disponibles en este viaje.");
+      setLoading(false);
+      return;
+    }
 
     const supabase = createClient();
     const { data: { user } } = await supabase.auth.getUser();

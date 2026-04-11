@@ -51,6 +51,7 @@ export default function CancelBookingButton({ bookingId, departureAt }: Props) {
     if (error) {
       setError(error.message);
       setLoading(false);
+      setShowConfirm(false);
       return;
     }
 
@@ -91,11 +92,16 @@ export default function CancelBookingButton({ bookingId, departureAt }: Props) {
   }
 
   return (
-    <button
-      onClick={() => setShowConfirm(true)}
-      className="w-full border border-red-200 text-red-600 rounded-lg py-2.5 text-sm font-medium hover:bg-red-50 transition-colors"
-    >
-      Cancelar reserva
-    </button>
+    <div>
+      {error && (
+        <p className="text-red-500 text-xs mb-2 text-center">{error}</p>
+      )}
+      <button
+        onClick={() => { setShowConfirm(true); setError(""); }}
+        className="w-full border border-red-200 text-red-600 rounded-lg py-2.5 text-sm font-medium hover:bg-red-50 transition-colors"
+      >
+        Cancelar reserva
+      </button>
+    </div>
   );
 }

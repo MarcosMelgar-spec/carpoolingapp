@@ -16,12 +16,17 @@ export default function CancelTripButton({ tripId }: { tripId: string }) {
   const router = useRouter();
   const [showConfirm, setShowConfirm] = useState(false);
   const [reason, setReason] = useState(REASONS[0]);
+  const [customReason, setCustomReason] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   async function handleCancel() {
     setLoading(true);
     setError("");
+
+    const finalReason = reason === "Otro" && customReason.trim()
+      ? customReason.trim()
+      : reason;
 
     const supabase = createClient();
 
@@ -30,7 +35,7 @@ export default function CancelTripButton({ tripId }: { tripId: string }) {
       .update({
         status: "cancelled",
         cancelled_at: new Date().toISOString(),
-        cancellation_reason: reason,
+        cancellation_reason: finalReason,
       })
       .eq("id", tripId);
 
@@ -41,15 +46,23 @@ export default function CancelTripButton({ tripId }: { tripId: string }) {
     }
 
     // Cancelar todas las reservas activas del viaje
-    await supabase
+    const { error: bookingsError } = await supabase
       .from("bookings")
       .update({
         status: "cancelled",
         cancelled_at: new Date().toISOString(),
-        cancellation_reason: `Conductor canceló el viaje: ${reason}`,
+        cancellation_reason: `Conductor canceló el viaje: ${finalReason}`,
       })
       .eq("trip_id", tripId)
       .in("status", ["pending", "confirmed"]);
+
+    if (bookingsError) {
+      // El viaje ya fue cancelado — igual navegamos pero mostramos advertencia
+      setError("Viaje cancelado, pero hubo un error al notificar a los pasajeros.");
+      setLoading(false);
+      setTimeout(() => router.push("/my-trips"), 2000);
+      return;
+    }
 
     router.push("/my-trips");
   }
@@ -61,17 +74,27 @@ export default function CancelTripButton({ tripId }: { tripId: string }) {
         <p className="text-xs text-red-600 mb-3">
           Todos los pasajeros con reserva serán notificados y sus reservas se cancelarán automáticamente.
         </p>
-        <div className="mb-4">
+        <div className="mb-4 space-y-2">
           <label className="block text-xs font-semibold text-slate-600 mb-1.5">Motivo</label>
           <select
             value={reason}
-            onChange={(e) => setReason(e.target.value)}
+            onChange={(e) => { setReason(e.target.value); setCustomReason(""); }}
             className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-red-400"
           >
             {REASONS.map((r) => (
               <option key={r} value={r}>{r}</option>
             ))}
           </select>
+          {reason === "Otro" && (
+            <textarea
+              value={customReason}
+              onChange={(e) => setCustomReason(e.target.value)}
+              maxLength={200}
+              rows={2}
+              placeholder="Describí el motivo..."
+              className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-red-400"
+            />
+          )}
         </div>
         <div className="flex gap-2">
           <button

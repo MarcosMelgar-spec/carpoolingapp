@@ -16,6 +16,7 @@ export default function ReviewButton({ tripId, reviewedId, reviewedName, already
   const [hovered, setHovered] = useState(0);
   const [comment, setComment] = useState("");
   const [loading, setLoading] = useState(false);
+  const [submitError, setSubmitError] = useState("");
   const [done, setDone] = useState(alreadyReviewed ?? false);
 
   const firstName = reviewedName.split(" ")[0];
@@ -56,7 +57,9 @@ export default function ReviewButton({ tripId, reviewedId, reviewedName, already
       p_comment: comment.trim() || null,
     });
     setLoading(false);
-    if (!error) {
+    if (error) {
+      setSubmitError("No se pudo enviar la calificación. Intentá de nuevo.");
+    } else {
       setDone(true);
       setOpen(false);
     }
@@ -95,6 +98,7 @@ export default function ReviewButton({ tripId, reviewedId, reviewedName, already
         placeholder="Comentario opcional..."
         className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent mb-3"
       />
+      {submitError && <p className="text-red-500 text-xs mb-2">{submitError}</p>}
       <div className="flex gap-2">
         <button
           onClick={handleSubmit}

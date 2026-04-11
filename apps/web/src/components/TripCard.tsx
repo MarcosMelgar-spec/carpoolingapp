@@ -72,7 +72,9 @@ export default function TripCard({ trip }: TripCardProps) {
                   : "bg-red-100 text-red-600"
               }`}>
                 <div className={`w-1.5 h-1.5 rounded-full ${trip.available_seats > 0 ? "bg-green-500" : "bg-red-500"}`} />
-                {trip.available_seats > 0 ? "Hay lugar" : "Sin lugares"}
+                {trip.available_seats > 0
+                  ? `${trip.available_seats} ${trip.available_seats === 1 ? "lugar" : "lugares"}`
+                  : "Sin lugares"}
               </div>
             </div>
           </div>

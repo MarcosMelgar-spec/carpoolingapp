@@ -198,9 +198,9 @@ function BookingCard({ booking, muted = false, reviewedTripIds }: { booking: any
             <p className="text-xs text-slate-400">{formatDate(trip.departure_at)}</p>
             <p className="text-xs text-slate-400 mt-0.5">Conductor: {trip.driver?.full_name}</p>
           </div>
-          <div className="text-right shrink-0">
+          <div className="text-right shrink-0 space-y-1">
             <p className="text-lg font-bold text-[#1e3a5f]">${Number(trip.price_per_seat).toLocaleString("es-AR")}</p>
-            <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${st.class}`}>{st.label}</span>
+            <span className={`inline-block text-xs font-semibold px-2 py-0.5 rounded-full ${st.class}`}>{st.label}</span>
           </div>
         </div>
       </Link>
