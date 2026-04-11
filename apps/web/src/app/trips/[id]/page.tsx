@@ -6,6 +6,7 @@ import BookButton from "./BookButton";
 import CancelBookingButton from "./CancelBookingButton";
 import CancelTripButton from "./CancelTripButton";
 import ManageBookingButton from "./ManageBookingButton";
+import DriverCancelBookingButton from "./DriverCancelBookingButton";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -216,9 +217,15 @@ export default async function TripDetailPage({ params }: Props) {
                               passengerName={booking.passenger?.full_name ?? ""}
                             />
                           ) : (
-                            <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-green-100 text-green-700">
-                              Confirmado
-                            </span>
+                            <div className="space-y-1.5">
+                              <span className="block text-xs font-semibold px-2.5 py-1 rounded-full bg-green-100 text-green-700 text-center">
+                                Confirmado
+                              </span>
+                              <DriverCancelBookingButton
+                                bookingId={booking.id}
+                                passengerName={booking.passenger?.full_name ?? ""}
+                              />
+                            </div>
                           )}
                         </div>
                       </div>
