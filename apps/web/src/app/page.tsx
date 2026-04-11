@@ -29,11 +29,16 @@ export default async function HomePage({
     .order("departure_at", { ascending: true })
     .limit(50);
 
-  if (filters.origin) {
-    query = query.ilike("origin", `%${filters.origin}%`);
+  // Extraer solo la ciudad (antes de la coma) para búsqueda flexible
+  // "Rosario, Santa Fe" → busca "%Rosario%"
+  const originCity = filters.origin?.split(",")[0].trim();
+  const destinationCity = filters.destination?.split(",")[0].trim();
+
+  if (originCity) {
+    query = query.ilike("origin", `%${originCity}%`);
   }
-  if (filters.destination) {
-    query = query.ilike("destination", `%${filters.destination}%`);
+  if (destinationCity) {
+    query = query.ilike("destination", `%${destinationCity}%`);
   }
   if (filters.date) {
     const from = `${filters.date}T00:00:00`;
