@@ -2,6 +2,7 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
+import LocationInput from "./LocationInput";
 
 export default function SearchBar() {
   const router = useRouter();
@@ -34,20 +35,18 @@ export default function SearchBar() {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <div>
           <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">Origen</label>
-          <input
-            type="text"
+          <LocationInput
             value={origin}
-            onChange={(e) => setOrigin(e.target.value)}
+            onChange={setOrigin}
             placeholder="Ej: Rosario"
             className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent"
           />
         </div>
         <div>
           <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">Destino</label>
-          <input
-            type="text"
+          <LocationInput
             value={destination}
-            onChange={(e) => setDestination(e.target.value)}
+            onChange={setDestination}
             placeholder="Ej: Buenos Aires"
             className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent"
           />

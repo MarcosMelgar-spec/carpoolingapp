@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
+import LocationInput from "@/components/LocationInput";
 
 export default function NewTripPage() {
   const router = useRouter();
@@ -85,11 +86,10 @@ export default function NewTripPage() {
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1.5">Origen</label>
-                <input
-                  name="origin"
-                  required
+                <LocationInput
                   value={form.origin}
-                  onChange={handleChange}
+                  onChange={(val) => setForm((p) => ({ ...p, origin: val }))}
+                  onSelect={(loc) => setForm((p) => ({ ...p, origin: loc.name, origin_lat: String(loc.lat), origin_lng: String(loc.lng) }))}
                   placeholder="Ej: Rosario, Santa Fe"
                   className="w-full border border-slate-300 rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent"
                 />
@@ -104,11 +104,10 @@ export default function NewTripPage() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1.5">Destino</label>
-                <input
-                  name="destination"
-                  required
+                <LocationInput
                   value={form.destination}
-                  onChange={handleChange}
+                  onChange={(val) => setForm((p) => ({ ...p, destination: val }))}
+                  onSelect={(loc) => setForm((p) => ({ ...p, destination: loc.name, destination_lat: String(loc.lat), destination_lng: String(loc.lng) }))}
                   placeholder="Ej: Buenos Aires"
                   className="w-full border border-slate-300 rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent"
                 />
