@@ -66,9 +66,14 @@ export default function TripCard({ trip }: TripCardProps) {
               <p className="text-xl font-bold text-[#1e3a5f]">
                 ${Number(trip.price_per_seat).toLocaleString("es-AR")}
               </p>
-              <p className="text-xs text-slate-400">
-                {trip.available_seats} {trip.available_seats === 1 ? "lugar" : "lugares"}
-              </p>
+              <div className={`inline-flex items-center gap-1 mt-0.5 text-xs font-semibold px-2 py-0.5 rounded-full ${
+                trip.available_seats > 0
+                  ? "bg-green-100 text-green-700"
+                  : "bg-red-100 text-red-600"
+              }`}>
+                <div className={`w-1.5 h-1.5 rounded-full ${trip.available_seats > 0 ? "bg-green-500" : "bg-red-500"}`} />
+                {trip.available_seats > 0 ? "Hay lugar" : "Sin lugares"}
+              </div>
             </div>
           </div>
         </div>

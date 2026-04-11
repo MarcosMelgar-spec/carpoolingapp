@@ -127,9 +127,24 @@ export default async function TripDetailPage({ params }: Props) {
 
               <div className="px-6 py-4 grid grid-cols-3 divide-x divide-slate-100">
                 <div className="pr-4">
-                  <p className="text-xs text-slate-400 uppercase tracking-wide mb-1">Asientos</p>
-                  <p className="text-2xl font-bold text-slate-800">{trip.available_seats}</p>
-                  <p className="text-xs text-slate-400">{trip.available_seats === 1 ? "disponible" : "disponibles"}</p>
+                  <p className="text-xs text-slate-400 uppercase tracking-wide mb-1">Lugares</p>
+                  {isDriver ? (
+                    <>
+                      <p className="text-2xl font-bold text-slate-800">{trip.available_seats}</p>
+                      <p className="text-xs text-slate-400">{trip.available_seats === 1 ? "disponible" : "disponibles"}</p>
+                    </>
+                  ) : (
+                    <>
+                      <div className={`inline-flex items-center gap-1.5 mt-1 px-2.5 py-1 rounded-full text-xs font-semibold ${
+                        trip.available_seats > 0
+                          ? "bg-green-100 text-green-700"
+                          : "bg-red-100 text-red-600"
+                      }`}>
+                        <div className={`w-1.5 h-1.5 rounded-full ${trip.available_seats > 0 ? "bg-green-500" : "bg-red-500"}`} />
+                        {trip.available_seats > 0 ? "Hay lugar" : "Sin lugares"}
+                      </div>
+                    </>
+                  )}
                 </div>
                 <div className="px-4">
                   <p className="text-xs text-slate-400 uppercase tracking-wide mb-1">Precio</p>
