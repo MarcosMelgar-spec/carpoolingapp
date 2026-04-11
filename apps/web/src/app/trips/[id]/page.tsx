@@ -5,6 +5,7 @@ import Navbar from "@/components/Navbar";
 import BookButton from "./BookButton";
 import CancelBookingButton from "./CancelBookingButton";
 import CancelTripButton from "./CancelTripButton";
+import ManageBookingButton from "./ManageBookingButton";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -178,7 +179,7 @@ export default async function TripDetailPage({ params }: Props) {
                 ) : (
                   <div className="space-y-3">
                     {bookings.map((booking) => (
-                      <div key={booking.id} className="flex items-center justify-between gap-3">
+                      <div key={booking.id} className="flex items-start justify-between gap-3 pb-3 border-b border-slate-100 last:border-0 last:pb-0">
                         <div className="flex items-center gap-3">
                           <div className="w-9 h-9 rounded-full bg-[#1e3a5f] flex items-center justify-center text-white text-sm font-bold shrink-0">
                             {booking.passenger?.full_name?.charAt(0).toUpperCase() ?? "?"}
@@ -192,13 +193,19 @@ export default async function TripDetailPage({ params }: Props) {
                             </p>
                           </div>
                         </div>
-                        <span className={`text-xs font-semibold px-2.5 py-1 rounded-full shrink-0 ${
-                          booking.status === "confirmed"
-                            ? "bg-green-100 text-green-700"
-                            : "bg-yellow-100 text-yellow-700"
-                        }`}>
-                          {booking.status === "confirmed" ? "Confirmado" : "Pendiente"}
-                        </span>
+
+                        <div className="shrink-0 min-w-[130px]">
+                          {booking.status === "pending" ? (
+                            <ManageBookingButton
+                              bookingId={booking.id}
+                              passengerName={booking.passenger?.full_name ?? ""}
+                            />
+                          ) : (
+                            <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-green-100 text-green-700">
+                              Confirmado
+                            </span>
+                          )}
+                        </div>
                       </div>
                     ))}
                   </div>
