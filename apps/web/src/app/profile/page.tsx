@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import Navbar from "@/components/Navbar";
 import ProfileForm from "./ProfileForm";
+import VehiclesForm from "./VehiclesForm";
 
 export const dynamic = "force-dynamic";
 
@@ -10,11 +11,10 @@ export default async function ProfilePage() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/auth/login");
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("*")
-    .eq("id", user.id)
-    .single();
+  const [{ data: profile }, { data: vehicles }] = await Promise.all([
+    supabase.from("profiles").select("*").eq("id", user.id).single(),
+    supabase.from("vehicles").select("id, car_model, car_color, car_plate").eq("user_id", user.id).order("created_at", { ascending: true }),
+  ]);
 
   return (
     <>
@@ -59,9 +59,11 @@ export default async function ProfilePage() {
           userId={user.id}
           initialName={profile?.full_name ?? ""}
           initialPhone={profile?.phone ?? ""}
-          initialCarModel={profile?.car_model ?? ""}
-          initialCarColor={profile?.car_color ?? ""}
-          initialCarPlate={profile?.car_plate ?? ""}
+        />
+
+        <VehiclesForm
+          userId={user.id}
+          initialVehicles={vehicles ?? []}
         />
       </div>
     </>

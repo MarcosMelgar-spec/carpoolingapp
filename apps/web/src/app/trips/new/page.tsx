@@ -1,15 +1,33 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import LocationInput from "@/components/LocationInput";
 
+interface Vehicle {
+  id: string;
+  car_model: string;
+  car_color: string;
+  car_plate: string;
+}
+
 export default function NewTripPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  // Vehicle state
+  const [vehicles, setVehicles] = useState<Vehicle[]>([]);
+  const [vehiclesLoaded, setVehiclesLoaded] = useState(false);
+  const [selectedVehicleId, setSelectedVehicleId] = useState("");
+  const [showAddVehicle, setShowAddVehicle] = useState(false);
+  const [newModel, setNewModel] = useState("");
+  const [newColor, setNewColor] = useState("");
+  const [newPlate, setNewPlate] = useState("");
+  const [addingVehicle, setAddingVehicle] = useState(false);
+  const [vehicleError, setVehicleError] = useState("");
 
   const [form, setForm] = useState({
     origin: "",
@@ -24,6 +42,59 @@ export default function NewTripPage() {
     description: "",
     meeting_point: "",
   });
+
+  useEffect(() => {
+    async function loadVehicles() {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const { data } = await supabase
+        .from("vehicles")
+        .select("id, car_model, car_color, car_plate")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: true });
+      const list = (data ?? []) as Vehicle[];
+      setVehicles(list);
+      if (list.length > 0) setSelectedVehicleId(list[0].id);
+      setVehiclesLoaded(true);
+    }
+    loadVehicles();
+  }, []);
+
+  async function handleAddVehicle() {
+    setVehicleError("");
+
+    if (newModel.trim().length < 2) { setVehicleError("El modelo debe tener al menos 2 caracteres"); return; }
+    if (newColor.trim().length < 2) { setVehicleError("El color debe tener al menos 2 caracteres"); return; }
+    const plateClean = newPlate.replace(/\s/g, "").toUpperCase();
+    if (!/^[A-Z0-9]{5,10}$/.test(plateClean)) { setVehicleError("Ingresá una patente válida (ej: ABC123 o AB123CD)"); return; }
+
+    setAddingVehicle(true);
+    const supabase = createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) { setAddingVehicle(false); router.push("/auth/login"); return; }
+
+    const { data, error: insertError } = await supabase
+      .from("vehicles")
+      .insert({ user_id: user.id, car_model: newModel.trim(), car_color: newColor.trim(), car_plate: plateClean })
+      .select()
+      .single();
+
+    setAddingVehicle(false);
+
+    if (insertError) {
+      setVehicleError(insertError.code === "23505" ? "Ya tenés un vehículo con esa patente" : insertError.message);
+      return;
+    }
+
+    const newVehicle = data as Vehicle;
+    setVehicles((prev) => [...prev, newVehicle]);
+    setSelectedVehicleId(newVehicle.id);
+    setNewModel("");
+    setNewColor("");
+    setNewPlate("");
+    setShowAddVehicle(false);
+  }
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -59,6 +130,17 @@ export default function NewTripPage() {
       return;
     }
 
+    if (!selectedVehicleId) {
+      setError("Seleccioná el vehículo con el que vas a hacer el viaje");
+      return;
+    }
+
+    const selectedVehicle = vehicles.find((v) => v.id === selectedVehicleId);
+    if (!selectedVehicle) {
+      setError("Vehículo no encontrado. Intentá de nuevo.");
+      return;
+    }
+
     setLoading(true);
 
     const supabase = createClient();
@@ -83,6 +165,9 @@ export default function NewTripPage() {
       price_per_seat: parseFloat(form.price_per_seat),
       description: form.description || null,
       meeting_point: form.meeting_point.trim() || null,
+      vehicle_model: selectedVehicle.car_model,
+      vehicle_color: selectedVehicle.car_color,
+      vehicle_plate: selectedVehicle.car_plate,
     }).select().single();
 
     if (error) {
@@ -211,6 +296,126 @@ export default function NewTripPage() {
               placeholder="Ej: Shell Av. Pellegrini 1234, frente al semáforo"
               className="w-full border border-slate-300 rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent"
             />
+          </div>
+
+          {/* Vehículo */}
+          <div className="bg-white rounded-xl border border-slate-200 p-5">
+            <h2 className="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-1">Vehículo</h2>
+            <p className="text-xs text-slate-400 mb-4">Con qué auto vas a viajar</p>
+
+            {!vehiclesLoaded && (
+              <div className="h-10 bg-slate-100 rounded-lg animate-pulse" />
+            )}
+
+            {vehiclesLoaded && vehicles.length > 0 && !showAddVehicle && (
+              <div className="space-y-3">
+                <select
+                  value={selectedVehicleId}
+                  onChange={(e) => setSelectedVehicleId(e.target.value)}
+                  className="w-full border border-slate-300 rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent bg-white"
+                >
+                  {vehicles.map((v) => (
+                    <option key={v.id} value={v.id}>
+                      {v.car_color} · {v.car_model} — {v.car_plate}
+                    </option>
+                  ))}
+                </select>
+                <button
+                  type="button"
+                  onClick={() => { setShowAddVehicle(true); setVehicleError(""); }}
+                  className="flex items-center gap-1.5 text-sm text-sky-600 hover:text-sky-800 font-medium transition-colors"
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                  </svg>
+                  Agregar otro vehículo
+                </button>
+              </div>
+            )}
+
+            {vehiclesLoaded && vehicles.length === 0 && !showAddVehicle && (
+              <div className="space-y-3">
+                <div className="flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-lg px-4 py-3">
+                  <svg className="w-4 h-4 text-amber-500 shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                  </svg>
+                  <p className="text-sm text-amber-700">No tenés vehículos registrados. Agregá uno para continuar.</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => { setShowAddVehicle(true); setVehicleError(""); }}
+                  className="flex items-center gap-1.5 text-sm text-sky-600 hover:text-sky-800 font-medium transition-colors"
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                  </svg>
+                  Agregar vehículo
+                </button>
+              </div>
+            )}
+
+            {showAddVehicle && (
+              <div className="space-y-3">
+                {vehicles.length > 0 && (
+                  <p className="text-sm font-semibold text-slate-700">Nuevo vehículo</p>
+                )}
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1.5">Modelo</label>
+                  <input
+                    type="text"
+                    value={newModel}
+                    onChange={(e) => setNewModel(e.target.value)}
+                    maxLength={100}
+                    placeholder="Ej: Ford Focus, Volkswagen Gol"
+                    className="w-full border border-slate-300 rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1.5">Color</label>
+                    <input
+                      type="text"
+                      value={newColor}
+                      onChange={(e) => setNewColor(e.target.value)}
+                      maxLength={50}
+                      placeholder="Ej: Blanco"
+                      className="w-full border border-slate-300 rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1.5">Patente</label>
+                    <input
+                      type="text"
+                      value={newPlate}
+                      onChange={(e) => setNewPlate(e.target.value.toUpperCase())}
+                      maxLength={10}
+                      placeholder="ABC 123"
+                      className="w-full border border-slate-300 rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent font-mono tracking-widest"
+                    />
+                  </div>
+                </div>
+                {vehicleError && <p className="text-red-500 text-sm">{vehicleError}</p>}
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={handleAddVehicle}
+                    disabled={addingVehicle}
+                    className="flex-1 bg-[#1e3a5f] text-white rounded-lg py-2 text-sm font-semibold hover:bg-[#16304f] disabled:opacity-50 transition-colors"
+                  >
+                    {addingVehicle ? "Guardando..." : "Guardar vehículo"}
+                  </button>
+                  {vehicles.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => { setShowAddVehicle(false); setVehicleError(""); setNewModel(""); setNewColor(""); setNewPlate(""); }}
+                      className="flex-1 border border-slate-300 text-slate-600 rounded-lg py-2 text-sm font-semibold hover:bg-slate-50 transition-colors"
+                    >
+                      Cancelar
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Descripción */}
