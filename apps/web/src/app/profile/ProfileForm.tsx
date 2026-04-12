@@ -37,9 +37,10 @@ export default function ProfileForm({ userId, initialName, initialPhone }: Props
 
     setLoading(true);
     const supabase = createClient();
+    const cleanPhone = phone.replace(/[\s\-\+\(\)]/g, "");
     const { error: updateError } = await supabase
       .from("profiles")
-      .update({ full_name: name.trim(), phone: phone.trim() || null })
+      .update({ full_name: name.trim(), phone: cleanPhone || null })
       .eq("id", userId);
 
     setLoading(false);

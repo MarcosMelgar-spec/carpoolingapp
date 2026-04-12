@@ -65,6 +65,7 @@ export default function NewTripPage() {
     const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) {
+      setLoading(false);
       router.push("/auth/login");
       return;
     }
