@@ -44,7 +44,7 @@ export default async function TripDetailPage({ params }: Props) {
 
   const { data: trip } = await supabase
     .from("trips")
-    .select("*, driver:profiles!driver_id(id, full_name, rating, trips_as_driver, phone)")
+    .select("*, driver:profiles!driver_id(id, full_name, rating, trips_as_driver, phone, car_model, car_color, car_plate)")
     .eq("id", id)
     .single();
 
@@ -326,6 +326,31 @@ export default async function TripDetailPage({ params }: Props) {
                 </div>
               </div>
               <RatingBar rating={trip.driver?.rating ?? 5} />
+
+              {/* Vehículo — visible para todos */}
+              {(trip.driver?.car_model || trip.driver?.car_plate) && (
+                <div className="mt-4 pt-4 border-t border-slate-100">
+                  <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-2">Vehículo</p>
+                  <div className="flex items-center gap-2">
+                    <svg className="w-4 h-4 text-slate-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7-7-7 7" />
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 15h14M5 15a2 2 0 01-2-2v-2a2 2 0 012-2h1l2-4h8l2 4h1a2 2 0 012 2v2a2 2 0 01-2 2M5 15v4a1 1 0 001 1h1m10-5v4a1 1 0 01-1 1h-1m-8 0h8" />
+                    </svg>
+                    <div>
+                      {trip.driver?.car_model && (
+                        <p className="text-sm font-semibold text-slate-700">
+                          {trip.driver.car_color ? `${trip.driver.car_color} · ` : ""}{trip.driver.car_model}
+                        </p>
+                      )}
+                      {trip.driver?.car_plate && (
+                        <p className="text-xs font-mono font-semibold text-slate-500 tracking-widest mt-0.5">
+                          {trip.driver.car_plate}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Action panel */}

@@ -59,6 +59,9 @@ export default async function ProfilePage() {
           userId={user.id}
           initialName={profile?.full_name ?? ""}
           initialPhone={profile?.phone ?? ""}
+          initialCarModel={profile?.car_model ?? ""}
+          initialCarColor={profile?.car_color ?? ""}
+          initialCarPlate={profile?.car_plate ?? ""}
         />
       </div>
     </>
