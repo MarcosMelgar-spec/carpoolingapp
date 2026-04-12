@@ -166,8 +166,14 @@ export default async function TerminosPage() {
 
         <Section title="12. Contacto">
           <p>
-            Para consultas sobre estos términos podés escribirnos a través del formulario de contacto disponible
-            en la plataforma.
+            Para consultas sobre estos términos podés escribirnos desde{" "}
+            <Link href="/contacto" className="text-sky-600 hover:underline">
+              la página de contacto
+            </Link>{" "}
+            o directamente a{" "}
+            <a href="mailto:marcosjmelgar@gmail.com" className="text-sky-600 hover:underline">
+              marcosjmelgar@gmail.com
+            </a>.
           </p>
         </Section>
 

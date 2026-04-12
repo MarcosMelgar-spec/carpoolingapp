@@ -95,7 +95,14 @@ export default async function PrivacidadPage() {
             <li><strong>Confidencialidad:</strong> oponerte al tratamiento de tus datos para determinadas finalidades.</li>
           </ul>
           <p className="mt-3">
-            Para ejercer cualquiera de estos derechos podés escribirnos a través del formulario de contacto.
+            Para ejercer cualquiera de estos derechos podés escribirnos desde{" "}
+            <Link href="/contacto" className="text-sky-600 hover:underline">
+              la página de contacto
+            </Link>{" "}
+            o a{" "}
+            <a href="mailto:marcosjmelgar@gmail.com" className="text-sky-600 hover:underline">
+              marcosjmelgar@gmail.com
+            </a>.
             Responderemos dentro de los plazos previstos por la Ley 25.326.
           </p>
           <p className="mt-3">
@@ -144,7 +151,14 @@ export default async function PrivacidadPage() {
         <Section title="11. Contacto">
           <p>
             Para consultas, solicitudes sobre tus datos o cualquier cuestión relacionada con esta política,
-            podés contactarnos a través del formulario disponible en la plataforma.
+            podés escribirnos desde{" "}
+            <Link href="/contacto" className="text-sky-600 hover:underline">
+              la página de contacto
+            </Link>{" "}
+            o directamente a{" "}
+            <a href="mailto:marcosjmelgar@gmail.com" className="text-sky-600 hover:underline">
+              marcosjmelgar@gmail.com
+            </a>.
           </p>
         </Section>
 

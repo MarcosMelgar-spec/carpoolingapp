@@ -10,7 +10,10 @@ export default function Footer() {
             Términos y condiciones
           </Link>
           <Link href="/privacidad" className="text-sm text-slate-400 hover:text-slate-600 transition-colors">
-            Política de privacidad
+            Privacidad
+          </Link>
+          <Link href="/contacto" className="text-sm text-slate-400 hover:text-slate-600 transition-colors">
+            Contacto
           </Link>
         </div>
       </div>
