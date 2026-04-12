@@ -40,6 +40,7 @@ export default function NewTripPage() {
     available_seats: "3",
     price_per_seat: "0",
     description: "",
+    trip_type: "door_to_door" as "door_to_door" | "meeting_point",
     meeting_point: "",
   });
 
@@ -130,6 +131,11 @@ export default function NewTripPage() {
       return;
     }
 
+    if (form.trip_type === "meeting_point" && !form.meeting_point.trim()) {
+      setError("Ingresá el punto de encuentro o elegí la modalidad Puerta a puerta");
+      return;
+    }
+
     if (!selectedVehicleId) {
       setError("Seleccioná el vehículo con el que vas a hacer el viaje");
       return;
@@ -164,7 +170,7 @@ export default function NewTripPage() {
       available_seats: parseInt(form.available_seats),
       price_per_seat: parseFloat(form.price_per_seat),
       description: form.description || null,
-      meeting_point: form.meeting_point.trim() || null,
+      meeting_point: form.trip_type === "meeting_point" ? form.meeting_point.trim() || null : null,
       vehicle_model: selectedVehicle.car_model,
       vehicle_color: selectedVehicle.car_color,
       vehicle_plate: selectedVehicle.car_plate,
@@ -277,25 +283,63 @@ export default function NewTripPage() {
             </div>
           </div>
 
-          {/* Punto de encuentro */}
+          {/* Modalidad */}
           <div className="bg-white rounded-xl border border-slate-200 p-5">
-            <div className="flex items-center justify-between mb-1">
-              <h2 className="text-sm font-semibold text-slate-500 uppercase tracking-wide">
-                Punto de encuentro <span className="normal-case font-normal text-slate-400">(opcional)</span>
-              </h2>
+            <h2 className="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-4">Modalidad de encuentro</h2>
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={() => setForm((p) => ({ ...p, trip_type: "door_to_door", meeting_point: "" }))}
+                className={`rounded-xl border-2 p-4 text-left transition-all ${
+                  form.trip_type === "door_to_door"
+                    ? "border-sky-500 bg-sky-50"
+                    : "border-slate-200 hover:border-slate-300"
+                }`}
+              >
+                <p className="text-lg mb-1">🏠</p>
+                <p className={`text-sm font-semibold ${form.trip_type === "door_to_door" ? "text-sky-700" : "text-slate-700"}`}>
+                  Puerta a puerta
+                </p>
+                <p className="text-xs text-slate-400 mt-0.5 leading-relaxed">
+                  Coordinás el punto de encuentro con cada pasajero por separado
+                </p>
+              </button>
+              <button
+                type="button"
+                onClick={() => setForm((p) => ({ ...p, trip_type: "meeting_point" }))}
+                className={`rounded-xl border-2 p-4 text-left transition-all ${
+                  form.trip_type === "meeting_point"
+                    ? "border-sky-500 bg-sky-50"
+                    : "border-slate-200 hover:border-slate-300"
+                }`}
+              >
+                <p className="text-lg mb-1">📍</p>
+                <p className={`text-sm font-semibold ${form.trip_type === "meeting_point" ? "text-sky-700" : "text-slate-700"}`}>
+                  Punto de encuentro
+                </p>
+                <p className="text-xs text-slate-400 mt-0.5 leading-relaxed">
+                  Todos se reúnen en un lugar fijo que vos definís
+                </p>
+              </button>
             </div>
-            <p className="text-xs text-slate-400 mb-3">
-              Dónde van a encontrarse. Solo visible para pasajeros con reserva confirmada.
-            </p>
-            <input
-              name="meeting_point"
-              type="text"
-              value={form.meeting_point}
-              onChange={handleChange}
-              maxLength={200}
-              placeholder="Ej: Shell Av. Pellegrini 1234, frente al semáforo"
-              className="w-full border border-slate-300 rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent"
-            />
+
+            {form.trip_type === "meeting_point" && (
+              <div className="mt-4">
+                <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                  Lugar de encuentro
+                </label>
+                <input
+                  name="meeting_point"
+                  type="text"
+                  value={form.meeting_point}
+                  onChange={handleChange}
+                  maxLength={200}
+                  placeholder="Ej: Shell Av. Pellegrini 1234, frente al semáforo"
+                  className="w-full border border-slate-300 rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent"
+                />
+                <p className="text-xs text-slate-400 mt-1">Solo visible para pasajeros con reserva confirmada</p>
+              </div>
+            )}
           </div>
 
           {/* Vehículo */}

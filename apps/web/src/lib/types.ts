@@ -25,6 +25,7 @@ export interface Trip {
   available_seats: number;
   price_per_seat: number;
   description?: string;
+  meeting_point?: string | null;
   status: TripStatus;
   created_at: string;
 }

@@ -78,6 +78,12 @@ export default function TripCard({ trip }: TripCardProps) {
               </div>
             </div>
           </div>
+
+          <div className="mt-3 pt-3 border-t border-slate-100">
+            <span className="text-xs text-slate-400">
+              {trip.meeting_point ? "📍 Punto de encuentro" : "🏠 Puerta a puerta"}
+            </span>
+          </div>
         </div>
       </div>
     </Link>

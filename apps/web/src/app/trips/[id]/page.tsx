@@ -145,7 +145,12 @@ export default async function TripDetailPage({ params }: Props) {
                     <p className="text-white font-bold text-lg">{trip.destination}</p>
                   </div>
                 </div>
-                <p className="text-white/60 text-sm capitalize">{formatDate(trip.departure_at)}</p>
+                <div className="flex items-center gap-3 mt-1 flex-wrap">
+                  <p className="text-white/60 text-sm capitalize">{formatDate(trip.departure_at)}</p>
+                  <span className="inline-flex items-center gap-1 text-xs font-medium text-white/60">
+                    {trip.meeting_point ? "📍 Punto de encuentro" : "🏠 Puerta a puerta"}
+                  </span>
+                </div>
               </div>
 
               <div className="px-6 py-4 grid grid-cols-3 divide-x divide-slate-100">
