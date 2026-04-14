@@ -121,6 +121,13 @@ export default function NewTripPage() {
       return;
     }
 
+    const maxDate = new Date();
+    maxDate.setDate(maxDate.getDate() + 30);
+    if (new Date(form.departure_at) > maxDate) {
+      setError("No podés publicar un viaje con más de 30 días de anticipación");
+      return;
+    }
+
     if (parseFloat(form.price_per_seat) < 0) {
       setError("El precio no puede ser negativo");
       return;
@@ -155,6 +162,30 @@ export default function NewTripPage() {
     if (!user) {
       setLoading(false);
       router.push("/auth/login");
+      return;
+    }
+
+    // Nombre requerido para publicar
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("full_name")
+      .eq("id", user.id)
+      .single();
+
+    if (!profile?.full_name || profile.full_name.trim().length < 2) {
+      setError("Completá tu nombre en el perfil antes de publicar un viaje.");
+      setLoading(false);
+      return;
+    }
+
+    // Límite de 3 viajes activos simultáneos
+    const { data: limitReached } = await supabase.rpc("check_driver_trip_limit", {
+      p_driver_id: user.id,
+    });
+
+    if (limitReached) {
+      setError("Ya tenés 3 viajes activos. Cancelá o esperá que terminen antes de publicar uno nuevo.");
+      setLoading(false);
       return;
     }
 
@@ -246,6 +277,7 @@ export default function NewTripPage() {
               value={form.departure_at}
               onChange={handleChange}
               min={new Date().toISOString().slice(0, 16)}
+              max={new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 16)}
               className="w-full border border-slate-300 rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent"
             />
           </div>

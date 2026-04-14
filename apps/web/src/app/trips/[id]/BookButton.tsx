@@ -27,6 +27,31 @@ export default function BookButton({ tripId, availableSeats }: { tripId: string;
       return;
     }
 
+    // Nombre requerido para reservar
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("full_name")
+      .eq("id", user.id)
+      .single();
+
+    if (!profile?.full_name || profile.full_name.trim().length < 2) {
+      setError("Completá tu nombre en el perfil antes de reservar.");
+      setLoading(false);
+      return;
+    }
+
+    // Pasajero bloqueado por cancelaciones tardías
+    const { data: isBlocked } = await supabase.rpc("check_passenger_blocked", {
+      p_passenger_id: user.id,
+    });
+
+    if (isBlocked) {
+      setError("Tu cuenta tiene restricciones por cancelaciones tardías. Contactanos para más información.");
+      setLoading(false);
+      return;
+    }
+
+    // Verificar conflicto horario (±3hs)
     const { data: hasConflict, error: conflictError } = await supabase.rpc("check_double_booking", {
       p_passenger_id: user.id,
       p_trip_id: tripId,
@@ -40,6 +65,18 @@ export default function BookButton({ tripId, availableSeats }: { tripId: string;
 
     if (hasConflict) {
       setError("Ya tenés una reserva activa en un viaje con horario similar (±3 hs). Cancelala primero.");
+      setLoading(false);
+      return;
+    }
+
+    // Verificar que no haya otro viaje reservado el mismo día
+    const { data: sameDayConflict } = await supabase.rpc("check_same_day_booking", {
+      p_passenger_id: user.id,
+      p_trip_id: tripId,
+    });
+
+    if (sameDayConflict) {
+      setError("Ya tenés un viaje reservado para ese día. Solo podés reservar un viaje por día.");
       setLoading(false);
       return;
     }
