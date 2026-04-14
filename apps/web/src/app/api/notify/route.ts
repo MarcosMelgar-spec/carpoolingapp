@@ -10,7 +10,6 @@ import {
   bookingCancelledByDriverEmail,
 } from "@/lib/email";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
 const FROM = "CarpoolingAR <onboarding@resend.dev>";
 
 async function getUserEmail(supabase: ReturnType<typeof createAdminClient>, userId: string) {
@@ -21,6 +20,7 @@ async function getUserEmail(supabase: ReturnType<typeof createAdminClient>, user
 export async function POST(req: NextRequest) {
   try {
     const { type, bookingId, tripId } = await req.json();
+    const resend = new Resend(process.env.RESEND_API_KEY);
     const supabase = createAdminClient();
 
     // ── booking_requested: pasajero solicita → notificar conductor ──
