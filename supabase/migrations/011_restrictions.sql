@@ -42,7 +42,7 @@ begin
   from public.bookings b
   join public.trips t on t.id = b.trip_id
   where b.passenger_id = p_passenger_id
-    and b.status = 'confirmed'
+    and b.status in ('pending', 'confirmed')
     and b.trip_id <> p_trip_id
     and (t.departure_at at time zone 'America/Argentina/Buenos_Aires')::date
       = (v_departure    at time zone 'America/Argentina/Buenos_Aires')::date;
