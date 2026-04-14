@@ -20,6 +20,11 @@ export default function ManageBookingButton({ bookingId, passengerName }: Props)
     const supabase = createClient();
     const { error } = await supabase.rpc("confirm_booking", { booking_id: bookingId });
     if (error) { setError(error.message); setLoading(null); return; }
+    fetch("/api/notify", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ type: "booking_confirmed", bookingId }),
+    });
     router.refresh();
     setLoading(null);
   }
@@ -30,6 +35,11 @@ export default function ManageBookingButton({ bookingId, passengerName }: Props)
     const supabase = createClient();
     const { error } = await supabase.rpc("reject_booking", { booking_id: bookingId });
     if (error) { setError(error.message); setLoading(null); return; }
+    fetch("/api/notify", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ type: "booking_rejected", bookingId }),
+    });
     router.refresh();
     setLoading(null);
   }

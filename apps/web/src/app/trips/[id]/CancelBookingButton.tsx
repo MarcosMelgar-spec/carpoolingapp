@@ -62,6 +62,12 @@ export default function CancelBookingButton({ bookingId, departureAt }: Props) {
       }
     }
 
+    fetch("/api/notify", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ type: "booking_cancelled_passenger", bookingId }),
+    });
+
     router.refresh();
     setShowConfirm(false);
   }

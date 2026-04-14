@@ -44,17 +44,23 @@ export default function BookButton({ tripId, availableSeats }: { tripId: string;
       return;
     }
 
-    const { error } = await supabase.from("bookings").insert({
+    const { data: booking, error } = await supabase.from("bookings").insert({
       trip_id: tripId,
       passenger_id: user.id,
       seats: 1,
-    });
+    }).select().single();
 
     if (error) {
       setError(error.message);
       setLoading(false);
       return;
     }
+
+    fetch("/api/notify", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ type: "booking_requested", bookingId: booking.id }),
+    });
 
     router.refresh();
   }

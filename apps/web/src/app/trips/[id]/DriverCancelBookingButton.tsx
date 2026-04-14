@@ -21,6 +21,11 @@ export default function DriverCancelBookingButton({ bookingId, passengerName }: 
     const supabase = createClient();
     const { error } = await supabase.rpc("driver_cancel_booking", { booking_id: bookingId });
     if (error) { setError(error.message); setLoading(false); return; }
+    fetch("/api/notify", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ type: "booking_cancelled_driver", bookingId }),
+    });
     router.refresh();
     setShowConfirm(false);
     setLoading(false);
