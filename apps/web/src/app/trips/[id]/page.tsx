@@ -8,7 +8,7 @@ import CancelTripButton from "./CancelTripButton";
 import ManageBookingButton from "./ManageBookingButton";
 import DriverCancelBookingButton from "./DriverCancelBookingButton";
 import ReviewButton from "@/components/ReviewButton";
-import CarImage from "@/components/CarImage";
+import CarIllustration from "@/components/CarIllustration";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -371,9 +371,7 @@ export default async function TripDetailPage({ params }: Props) {
               {(trip.vehicle_model || trip.vehicle_plate) && (
                 <div className="mt-4 pt-4 border-t border-slate-100">
                   <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-2">Vehículo</p>
-                  {trip.vehicle_model && (
-                    <CarImage model={trip.vehicle_model} color={trip.vehicle_color} />
-                  )}
+                  <CarIllustration color={trip.vehicle_color} />
                   <div className="flex items-center gap-2 mt-2">
                     <svg className="w-4 h-4 text-slate-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7-7-7 7" />
