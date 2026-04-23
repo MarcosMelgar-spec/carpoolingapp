@@ -5,7 +5,7 @@ const COLOR_MAP: Record<string, string> = {
   azul: "#2563eb",
   celeste: "#38bdf8",
   gris: "#94a3b8",
-  gris oscuro: "#475569",
+  "gris oscuro": "#475569",
   plata: "#cbd5e1",
   plateado: "#cbd5e1",
   verde: "#16a34a",
@@ -25,7 +25,14 @@ const COLOR_MAP: Record<string, string> = {
 
 function resolveColor(color?: string | null): string {
   if (!color) return "#94a3b8";
-  return COLOR_MAP[color.toLowerCase().trim()] ?? "#94a3b8";
+  const normalized = color.toLowerCase().trim();
+  // Exact match
+  if (COLOR_MAP[normalized]) return COLOR_MAP[normalized];
+  // Partial match: "azul marino" → azul, "rojo oscuro" → rojo
+  for (const [key, value] of Object.entries(COLOR_MAP)) {
+    if (normalized.includes(key)) return value;
+  }
+  return "#94a3b8";
 }
 
 function isDark(hex: string): boolean {
